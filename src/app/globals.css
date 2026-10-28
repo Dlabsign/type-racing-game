@@ -1,0 +1,375 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@1..144,1..1000&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* Dynamic Typography Tokens: Plus Jakarta Sans (Display) & Google Sans Flex (UI/Typing) */
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sports: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-ui: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* High-Speed Sports Poster Duo-Tone & Obsidian Color System */
+  --sports-volt: #CCFF00;
+  --sports-volt-bright: #D4FF00;
+  --sports-volt-glow: rgba(204, 255, 0, 0.4);
+  --sports-primary: #2563EB;
+  --sports-primary-hover: #1D4ED8;
+  --sports-emerald: #16A34A;
+  --sports-amber: #F59E0B;
+  --sports-crimson: #EF4444;
+
+  /* Deep Obsidian Surfaces & High-Contrast Borders */
+  --sports-bg: #050811;
+  --sports-surface: #0B101D;
+  --sports-surface-muted: #0E1526;
+  --sports-border: rgba(255, 255, 255, 0.12);
+  --sports-border-strong: rgba(255, 255, 255, 0.22);
+  --sports-text-main: #F8FAFC;
+  --sports-text-muted: #94A3B8;
+
+  /* Deep Stealth Obsidian Athletic Running Track */
+  --track-surface-start: #0E1424;
+  --track-surface-mid: #080C16;
+  --track-surface-end: #050811;
+  --track-line: rgba(255, 255, 255, 0.32);
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Browser Surface Theming */
+::selection {
+  background-color: rgba(204, 255, 0, 0.35);
+  color: #050811;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(5, 8, 17, 0.85);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sports-volt);
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  max-width: 100dvw;
+  max-height: 100dvh;
+  overflow: hidden;
+  font-family: var(--font-sports);
+  background-color: var(--sports-bg);
+  color: var(--sports-text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Modern High-Craft Display Typography Utilities */
+.font-display {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-sports, .font-ui, .font-montreal {
+  font-family: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-mono-num, .font-stat-num {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typing Ergonomics: Zero Layout Shift */
+.typing-target-text {
+  font-family: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: 0.005em;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-rendering: optimizeLegibility;
+}
+
+/* Micro-Shake on Typing Error */
+@keyframes charMicroShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+.error-char-microshake {
+  display: inline-block;
+  background-color: #EF4444 !important;
+  color: #FFFFFF !important;
+  border-radius: 4px;
+  animation: charMicroShake 0.18s ease-in-out;
+  text-rendering: optimizeLegibility;
+}
+
+/* Space Character Indicator */
+.space-char-indicator {
+  display: inline-block;
+  min-width: 0.38em;
+  text-align: center;
+  text-rendering: optimizeLegibility;
+}
+
+/* Floating Bottom Dock Container (Slim Capsule Island) */
+.sports-bottom-dock {
+  background: rgba(11, 16, 29, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.8), 0 0 24px -6px rgba(204, 255, 0, 0.15);
+  border-radius: clamp(16px, 3vw, 24px);
+}
+
+/* Active Caret Volt Line */
+@keyframes voltCaretPulse {
+  0%, 49% { opacity: 1; transform: scaleY(1); }
+  50%, 100% { opacity: 0.18; transform: scaleY(0.92); }
+}
+
+.active-caret-volt,
+.active-caret {
+  display: inline-block;
+  width: 3px;
+  height: 1.25em;
+  background-color: var(--sports-volt);
+  box-shadow: 0 0 10px var(--sports-volt);
+  vertical-align: middle;
+  margin: 0 2px;
+  animation: voltCaretPulse 0.72s infinite ease-in-out;
+  border-radius: 9999px;
+}
+
+/* Glass UI Panels */
+.apple-glass-pill {
+  background: rgba(11, 16, 29, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.apple-glass-sheet,
+.apple-glass-card {
+  background: var(--sports-surface);
+  border: 1px solid var(--sports-border);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+}
+
+/* Buttons */
+.btn-action-primary {
+  background-color: var(--sports-primary);
+  color: #FFFFFF;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  box-shadow: 0 6px 20px -2px rgba(37, 99, 235, 0.45);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-action-primary:hover {
+  background-color: var(--sports-primary-hover);
+  transform: translateY(-1.5px) scale(1.01);
+  box-shadow: 0 10px 24px -2px rgba(37, 99, 235, 0.55);
+}
+.btn-action-primary:active {
+  transform: scale(0.97);
+}
+
+/* High-Speed Obsidian Athletic Running Track */
+.running-track {
+  background: linear-gradient(180deg, var(--track-surface-start) 0%, var(--track-surface-mid) 50%, var(--track-surface-end) 100%);
+  border-top: 3px solid var(--sports-volt);
+  border-bottom: 3px solid var(--sports-volt);
+  position: relative;
+  box-shadow: inset 0 18px 36px rgba(0, 0, 0, 0.85), inset 0 -18px 36px rgba(0, 0, 0, 0.85);
+}
+
+.track-lane {
+  border-bottom: 1.5px dashed var(--track-line);
+  position: relative;
+}
+.track-lane:last-child {
+  border-bottom: none;
+}
+
+/* Player Lane Aura in Obsidian Volt */
+.player-lane-aura {
+  background: linear-gradient(90deg, rgba(204, 255, 0, 0.12) 0%, rgba(204, 255, 0, 0.02) 70%, transparent 100%);
+  border-left: 4px solid var(--sports-volt);
+  box-shadow: inset 0 0 30px rgba(204, 255, 0, 0.05);
+}
+
+/* High-Speed Finish Line Checkered Strip with Volt Neon Border */
+.finish-line-strip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 94%;
+  width: clamp(18px, 2.2vw, 24px);
+  transform: skewX(-14deg);
+  background-image:
+    linear-gradient(45deg, #000 25%, transparent 25%),
+    linear-gradient(-45deg, #000 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #000 75%),
+    linear-gradient(-45deg, transparent 75%, #000 75%);
+  background-size: 10px 10px;
+  background-color: var(--sports-volt);
+  border-left: 2px solid var(--sports-volt);
+  border-right: 2px solid #FFFFFF;
+  box-shadow: -4px 0 20px rgba(204, 255, 0, 0.45), 4px 0 20px rgba(204, 255, 0, 0.2);
+  z-index: 10;
+}
+
+/* ========================================================================= */
+/* BIOMECHANICAL KINEMATIC RUNNER RIG (Multi-Joint Hip -> Thigh -> Knee -> Calf) */
+/* ========================================================================= */
+.arm-front, .arm-back, .runner-body-group,
+.thigh-front, .calf-front, .thigh-back, .calf-back {
+  transform-box: view-box;
+}
+
+/* Precise Anatomical Joint Centers in SVG Grid */
+.runner-body-group { transform-origin: 47px 50px; }
+.arm-front { transform-origin: 51px 31px; }
+.arm-back { transform-origin: 46px 31px; }
+.thigh-front { transform-origin: 49px 50px; }
+.calf-front { transform-origin: 62px 59px; }
+.thigh-back { transform-origin: 45px 50px; }
+.calf-back { transform-origin: 32px 59px; }
+
+/* Sprint Biomechanics Keyframes */
+@keyframes sprintTorsoBob {
+  0%, 100% { transform: translateY(0px) rotate(3deg); }
+  25% { transform: translateY(-3px) rotate(5deg); }
+  50% { transform: translateY(0px) rotate(3deg); }
+  75% { transform: translateY(-3px) rotate(2deg); }
+}
+
+@keyframes sprintArmFront {
+  0%, 100% { transform: rotate(32deg); }
+  50% { transform: rotate(-38deg); }
+}
+@keyframes sprintArmBack {
+  0%, 100% { transform: rotate(-38deg); }
+  50% { transform: rotate(32deg); }
+}
+
+@keyframes sprintThighFront {
+  0%   { transform: rotate(-38deg); } /* High knee drive forward */
+  25%  { transform: rotate(-10deg); } /* Foot strike down */
+  50%  { transform: rotate(28deg); }  /* Drive extension back */
+  75%  { transform: rotate(5deg); }   /* Recovery forward */
+  100% { transform: rotate(-38deg); }
+}
+@keyframes sprintCalfFront {
+  0%   { transform: rotate(15deg); }  /* Shin reaching forward */
+  25%  { transform: rotate(-15deg); } /* Foot plants firm */
+  50%  { transform: rotate(-20deg); } /* Full extension */
+  75%  { transform: rotate(55deg); }  /* Heel folds high to glute */
+  100% { transform: rotate(15deg); }
+}
+
+@keyframes sprintThighBack {
+  0%   { transform: rotate(28deg); }  /* Drive extension back */
+  25%  { transform: rotate(5deg); }   /* Recovery forward */
+  50%  { transform: rotate(-38deg); } /* High knee drive forward */
+  75%  { transform: rotate(-10deg); } /* Foot strike down */
+  100% { transform: rotate(28deg); }
+}
+@keyframes sprintCalfBack {
+  0%   { transform: rotate(-20deg); } /* Full extension */
+  25%  { transform: rotate(55deg); }  /* Heel folds high to glute */
+  50%  { transform: rotate(15deg); }  /* Shin reaching forward */
+  75%  { transform: rotate(-15deg); } /* Foot plants firm */
+  100% { transform: rotate(-20deg); }
+}
+
+@keyframes speedTrailPulse {
+  0%, 100% { opacity: 0.9; transform: scaleX(1); }
+  50% { opacity: 0.3; transform: scaleX(0.7); }
+}
+
+.runner-anchor {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -55%);
+  z-index: 20;
+  pointer-events: none;
+  will-change: left;
+}
+
+/* Active Running Cycle synced to player WPM */
+.runner-active .runner-body-group { animation: sprintTorsoBob var(--run-cycle, 0.35s) infinite ease-in-out; }
+.runner-active .arm-front { animation: sprintArmFront var(--run-cycle, 0.35s) infinite ease-in-out; }
+.runner-active .arm-back { animation: sprintArmBack var(--run-cycle, 0.35s) infinite ease-in-out; }
+.runner-active .thigh-front { animation: sprintThighFront var(--run-cycle, 0.35s) infinite ease-in-out; }
+.runner-active .calf-front { animation: sprintCalfFront var(--run-cycle, 0.35s) infinite ease-in-out; }
+.runner-active .thigh-back { animation: sprintThighBack var(--run-cycle, 0.35s) infinite ease-in-out; }
+.runner-active .calf-back { animation: sprintCalfBack var(--run-cycle, 0.35s) infinite ease-in-out; }
+.runner-active .speed-trails { animation: speedTrailPulse 0.22s infinite ease-in-out; }
+
+/* Idle / Slowing Pose: Smooth transition back to neutral */
+.runner-idle .thigh-front,
+.runner-idle .calf-front,
+.runner-idle .thigh-back,
+.runner-idle .calf-back,
+.runner-idle .arm-front,
+.runner-idle .arm-back,
+.runner-idle .runner-body-group {
+  animation: none !important;
+  transform: none;
+  transition: transform 0.25s ease-out;
+}
+.runner-idle .speed-trails {
+  opacity: 0;
+}
+
+/* Container Error Shake */
+@keyframes errorShakeAnim {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+.error-shake {
+  animation: errorShakeAnim 0.22s ease-in-out;
+  border-color: #EF4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35) !important;
+}
+
+@keyframes appleFadeInScale {
+  0% { opacity: 0; transform: scale(0.97); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-apple-in {
+  animation: appleFadeInScale 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
