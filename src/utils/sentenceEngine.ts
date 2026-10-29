@@ -9,11 +9,11 @@ export function getCuratedSentence(
   difficulty: DifficultyLevel,
   isPrerender: boolean = false
 ): string {
-  const pool = SENTENCE_THEMES[theme]?.[difficulty] || SENTENCE_THEMES.motivasi.medium;
+  const pool = SENTENCE_THEMES[theme]?.[difficulty] || SENTENCE_THEMES.english.medium;
 
   // For deterministic static pre-rendering (Next.js SSR safety)
   if (isPrerender) {
-    return pool[0] || 'Secangkir kopi hangat selalu terasa nikmat di pagi hari yang sejuk.';
+    return pool[0] || 'Keep the rhythm smooth and let the words flow naturally.';
   }
 
   const key = `${theme}:${difficulty}`;

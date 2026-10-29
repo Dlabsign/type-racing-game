@@ -28,6 +28,7 @@ export interface TournamentRound {
   targetWpm: number;
   heats: TournamentHeat[];
   completed: boolean;
+  prizePoints?: number;
 }
 
 export interface TournamentRoundStat {
@@ -39,6 +40,7 @@ export interface TournamentRoundStat {
   timeSec: number;
   timeStr: string;
   qualified: boolean;
+  points?: number;
 }
 
 export interface TournamentState {

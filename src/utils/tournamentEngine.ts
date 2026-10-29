@@ -1,10 +1,46 @@
 import {
   TournamentState,
   TournamentParticipant,
-  TournamentRoundId,
-  TournamentRoundStat
+  TournamentRoundStat,
+  TournamentRoundId
 } from '@/types/tournament';
 import { RunnerState } from '@/types/game';
+
+export interface TournamentStageReward {
+  roundId: TournamentRoundId;
+  name: string;
+  prizePoints: number;
+  bonusPoints: number;
+  description: string;
+}
+
+/**
+ * Nilai poin hadiah berjenjang pada setiap tahap turnamen.
+ * Perempat Final (1.000 Poin) < Semifinal (2.500 Poin) < Grand Final (5.000 Poin).
+ */
+export const TOURNAMENT_STAGE_REWARDS: Record<TournamentRoundId, TournamentStageReward> = {
+  1: {
+    roundId: 1,
+    name: 'Perempat Final',
+    prizePoints: 1000,
+    bonusPoints: 300,
+    description: 'Hadiah Perempat Final: +1.000 Poin'
+  },
+  2: {
+    roundId: 2,
+    name: 'Semifinal',
+    prizePoints: 2500,
+    bonusPoints: 500,
+    description: 'Hadiah Semifinal: +2.500 Poin'
+  },
+  3: {
+    roundId: 3,
+    name: 'Grand Final',
+    prizePoints: 5000,
+    bonusPoints: 2000,
+    description: 'Hadiah Juara Grand Final: +5.000 Poin'
+  }
+};
 
 // 7 Preset AI Rivals with distinct styles and colors
 const AI_ROSTER_DEFAULTS = [
@@ -18,12 +54,12 @@ const AI_ROSTER_DEFAULTS = [
 ];
 
 export function createInitialTournament(
-  playerName: string = 'Kamu',
+  playerName: string = 'Anda',
   playerColor: string = '#CCFF00'
 ): TournamentState {
   const player: TournamentParticipant = {
     id: 'player',
-    name: playerName.trim() || 'Kamu',
+    name: playerName.trim() || 'Anda',
     isPlayer: true,
     color: playerColor || '#CCFF00',
     bib: '01',
@@ -61,13 +97,14 @@ export function createInitialTournament(
       qf: {
         id: 1,
         name: 'Perempat Final',
-        subtitle: '8 Pelari • Ambil 2 Tercepat',
+        subtitle: '8 Pelari • 2 Teratas Lolos',
         targetWpm: 65,
+        prizePoints: TOURNAMENT_STAGE_REWARDS[1].prizePoints,
         completed: false,
         heats: [
           {
             id: 'qf_heat_1',
-            title: 'Heat 1 (Lintasan Kamu)',
+            title: 'Heat 1 (Lintasan Anda)',
             isPlayerHeat: true,
             completed: false,
             participants: qfHeat1
@@ -84,8 +121,9 @@ export function createInitialTournament(
       sf: {
         id: 2,
         name: 'Semifinal',
-        subtitle: '4 Pelari • Ambil 2 Tercepat',
+        subtitle: '4 Pelari • 2 Teratas Lolos',
         targetWpm: 85,
+        prizePoints: TOURNAMENT_STAGE_REWARDS[2].prizePoints,
         completed: false,
         heats: [
           {
@@ -100,13 +138,14 @@ export function createInitialTournament(
       gf: {
         id: 3,
         name: 'Grand Final',
-        subtitle: '4 Finalis • Juara 1 Angkat Trofi',
+        subtitle: '4 Finalis • Juara 1',
         targetWpm: 105,
+        prizePoints: TOURNAMENT_STAGE_REWARDS[3].prizePoints,
         completed: false,
         heats: [
           {
             id: 'gf_heat_1',
-            title: 'Grand Final Match',
+            title: 'Babak Grand Final',
             isPlayerHeat: true,
             completed: false,
             participants: [] // Populated after SF
@@ -220,6 +259,17 @@ export function resolveTournamentRound(
   // Round 3 (GF): Rank 1 (Winner)
   const isQualified = (roundId < 3 && playerRank <= 2) || (roundId === 3 && playerRank === 1);
 
+  // Perhitungan poin hadiah berjenjang per tahap:
+  // Semakin tinggi babak (QF: 1000, SF: 2500, GF: 5000), semakin tinggi hadiahnya.
+  const stageReward = TOURNAMENT_STAGE_REWARDS[roundId];
+  let earnedPoints = 0;
+  if (isQualified) {
+    earnedPoints = stageReward.prizePoints + (playerRank === 1 ? stageReward.bonusPoints : 0);
+  } else {
+    // Poin partisipasi jika tereliminasi (30% dari poin hadiah babak tersebut)
+    earnedPoints = Math.round(stageReward.prizePoints * 0.3);
+  }
+
   const stat: TournamentRoundStat = {
     roundId,
     roundName,
@@ -228,7 +278,8 @@ export function resolveTournamentRound(
     accuracy: playerAccuracy,
     timeSec: playerTimeSec,
     timeStr: playerTimeStr,
-    qualified: isQualified
+    qualified: isQualified,
+    points: earnedPoints
   };
   current.playerHistory.push(stat);
 
@@ -356,12 +407,13 @@ export function resolveTournamentRound(
  */
 export function calculateTournamentStats(history: TournamentRoundStat[]) {
   if (history.length === 0) {
-    return { avgWpm: 0, avgAccuracy: 100, totalTimeSec: 0, totalTimeStr: '00:00.00' };
+    return { avgWpm: 0, avgAccuracy: 100, totalTimeSec: 0, totalTimeStr: '00:00.00', totalPoints: 0 };
   }
 
   const totalWpm = history.reduce((acc, h) => acc + h.wpm, 0);
   const totalAcc = history.reduce((acc, h) => acc + h.accuracy, 0);
   const totalTime = history.reduce((acc, h) => acc + h.timeSec, 0);
+  const totalPoints = history.reduce((acc, h) => acc + (h.points || 0), 0);
 
   const avgWpm = Math.round(totalWpm / history.length);
   const avgAccuracy = Math.round((totalAcc / history.length) * 10) / 10;
@@ -371,5 +423,5 @@ export function calculateTournamentStats(history: TournamentRoundStat[]) {
   const hundredths = Math.floor((totalTime - Math.floor(totalTime)) * 100);
   const totalTimeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(hundredths).padStart(2, '0')}`;
 
-  return { avgWpm, avgAccuracy, totalTimeSec: totalTime, totalTimeStr };
+  return { avgWpm, avgAccuracy, totalTimeSec: totalTime, totalTimeStr, totalPoints };
 }

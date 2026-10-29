@@ -1,11 +1,114 @@
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@1..144,1..1000&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Google+Sans+Flex:opsz,wght@1..144,1..1000&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --spacing-2xs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 40px;
+}
+
 :root {
-  /* Dynamic Typography Tokens: Plus Jakarta Sans (Display) & Google Sans Flex (UI/Typing) */
-  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-sports: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-ui: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* ========================================================================= */
+  /* Disciplined Swiss Minimalist Compact Spatial Scale Tokens (4px/8px Basis) */
+  /* ========================================================================= */
+  --space-2xs: 4px;   /* icon-to-label gaps, badge offsets */
+  --space-xs:  8px;   /* form label-to-input gap, inline chip margins */
+  --space-sm:  12px;  /* tight card padding, button gap groups */
+  --space-md:  16px;  /* standard panel padding, modal inner gutters */
+  --space-lg:  24px;  /* structural stack distance between sections */
+  --space-xl:  32px;  /* major view boundaries */
+  --space-xl-max: 40px; /* cap maximum vertical margins at 40px */
+
+  /* Legacy spatial aliases mapped to compact spatial scale */
+  --space-micro: var(--space-2xs);
+  --space-tight: var(--space-xs);
+  --space-compact: var(--space-sm);
+  --space-regular: var(--space-md);
+  --space-medium: var(--space-lg);
+  --space-section: var(--space-xl);
+  --space-section-lg: var(--space-xl-max);
+
+  /* Strict Ergonomic Reading Measure: Zero horizontal text stretching */
+  --measure-prose: min(100%, 65ch);
+
+  /* Typography Scale Tokens (Proportional Line-Height: 1.15-1.25 Headings, 1.45-1.50 Body) */
+  --font-size-large-title: 34px;
+  --leading-large-title: 40px;
+  --tracking-large-title: 0.37px;
+  --weight-large-title: 700;
+
+  --font-size-title-1: 28px;
+  --leading-title-1: 34px;
+  --tracking-title-1: 0.36px;
+  --weight-title-1: 700;
+
+  --font-size-title-2: 22px;
+  --leading-title-2: 27px;
+  --tracking-title-2: 0.35px;
+  --weight-title-2: 600;
+
+  --font-size-title-3: 20px;
+  --leading-title-3: 24px;
+  --tracking-title-3: 0.38px;
+  --weight-title-3: 600;
+
+  --font-size-headline: 17px;
+  --leading-headline: 22px;
+  --tracking-headline: -0.41px;
+  --weight-headline: 600;
+
+  --font-size-body: 17px;
+  --leading-body: 25px;
+  --tracking-body: -0.41px;
+  --weight-body: 400;
+
+  --font-size-callout: 16px;
+  --leading-callout: 24px;
+  --tracking-callout: -0.32px;
+  --weight-callout: 400;
+
+  --font-size-subhead: 15px;
+  --leading-subhead: 22px;
+  --tracking-subhead: -0.24px;
+  --weight-subhead: 400;
+
+  --font-size-footnote: 13px;
+  --leading-footnote: 19px;
+  --tracking-footnote: -0.08px;
+  --weight-footnote: 400;
+
+  --font-size-caption-1: 12px;
+  --leading-caption-1: 17px;
+  --tracking-caption-1: 0px;
+  --weight-caption-1: 400;
+
+  --font-size-caption-2: 11px;
+  --leading-caption-2: 15px;
+  --tracking-caption-2: 0.07px;
+  --weight-caption-2: 400;
+
+  /* Shorthand Token Variables */
+  --font-large-title: var(--weight-large-title) var(--font-size-large-title)/var(--leading-large-title) var(--font-display);
+  --font-title-1: var(--weight-title-1) var(--font-size-title-1)/var(--leading-title-1) var(--font-display);
+  --font-title-2: var(--weight-title-2) var(--font-size-title-2)/var(--leading-title-2) var(--font-display);
+  --font-title-3: var(--weight-title-3) var(--font-size-title-3)/var(--leading-title-3) var(--font-display);
+  --font-headline: var(--weight-headline) var(--font-size-headline)/var(--leading-headline) var(--font-ui);
+  --font-body: var(--weight-body) var(--font-size-body)/var(--leading-body) var(--font-ui);
+  --font-callout: var(--weight-callout) var(--font-size-callout)/var(--leading-callout) var(--font-ui);
+  --font-subhead: var(--weight-subhead) var(--font-size-subhead)/var(--leading-subhead) var(--font-ui);
+  --font-footnote: var(--weight-footnote) var(--font-size-footnote)/var(--leading-footnote) var(--font-ui);
+  --font-caption-1: var(--weight-caption-1) var(--font-size-caption-1)/var(--leading-caption-1) var(--font-ui);
+  --font-caption-2: var(--weight-caption-2) var(--font-size-caption-2)/var(--leading-caption-2) var(--font-ui);
+
+  /* Dynamic Typography Tokens: Fredoka / Plus Jakarta Sans (Display) & Google Sans Flex (UI/Typing) with CJK Fallbacks */
+  --font-fredoka: 'Fredoka', 'Plus Jakarta Sans', 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-sports: 'Google Sans Flex', 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-ui: 'Google Sans Flex', 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
 
   /* High-Speed Sports Poster Duo-Tone & Obsidian Color System */
   --sports-volt: #CCFF00;
@@ -31,6 +134,160 @@
   --track-surface-mid: #080C16;
   --track-surface-end: #050811;
   --track-line: rgba(255, 255, 255, 0.32);
+}
+
+/* Fluid Proportional Scale for Compact Viewports */
+@media (max-width: 640px) {
+  :root {
+    --font-size-large-title: 28px;
+    --leading-large-title: 33px;
+    --tracking-large-title: 0.36px;
+
+    --font-size-title-1: 24px;
+    --leading-title-1: 29px;
+    --tracking-title-1: 0.35px;
+
+    --font-size-title-2: 20px;
+    --leading-title-2: 24px;
+    --tracking-title-2: 0.38px;
+
+    --font-size-title-3: 18px;
+    --leading-title-3: 22px;
+    --tracking-title-3: -0.2px;
+
+    --font-size-headline: 16px;
+    --leading-headline: 20px;
+    --tracking-headline: -0.32px;
+
+    --font-size-body: 16px;
+    --leading-body: 24px;
+    --tracking-body: -0.32px;
+
+    --font-size-callout: 15px;
+    --leading-callout: 22px;
+    --tracking-callout: -0.24px;
+
+    --font-size-subhead: 14px;
+    --leading-subhead: 20px;
+    --tracking-subhead: -0.15px;
+
+    --font-size-footnote: 12px;
+    --leading-footnote: 18px;
+    --tracking-footnote: 0px;
+
+    --font-size-caption-1: 11px;
+    --leading-caption-1: 16px;
+    --tracking-caption-1: 0.05px;
+
+    --font-size-caption-2: 10px;
+    --leading-caption-2: 14px;
+    --tracking-caption-2: 0.07px;
+  }
+}
+
+/* ========================================================================= */
+/* Minimalist Editorial Reading & Compact Swiss Grid Containers             */
+/* ========================================================================= */
+.measure-prose, .editorial-measure, .prose-compact {
+  max-width: min(100%, 65ch);
+}
+
+/* Swiss Grid Card, Sheet & Component Tightening (Strict 14px–18px Padding) */
+.modal-panel-container,
+.apple-glass-card,
+.apple-glass-sheet,
+.swiss-card {
+  background: var(--sports-surface);
+  border: 1px solid var(--sports-border);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.75);
+}
+@media (min-width: 640px) {
+  .modal-panel-container,
+  .apple-glass-card,
+  .apple-glass-sheet,
+  .swiss-card {
+    padding: 16px;
+  }
+}
+@media (min-width: 1024px) {
+  .modal-panel-container,
+  .apple-glass-card,
+  .apple-glass-sheet,
+  .swiss-card {
+    padding: 18px;
+  }
+}
+
+/* Swiss Grid Compact Data / Table Rows (py: 10px–12px, px: 12px–14px) */
+.data-row-compact {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+@media (min-width: 640px) {
+  .data-row-compact {
+    padding-top: 11px;
+    padding-bottom: 11px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
+/* Hairline Separators */
+.hairline-divider {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Dock & Pill Controls (gap: 6px–8px between segment pills) */
+.pill-dock,
+.segment-dock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 9999px;
+  background: rgba(11, 16, 29, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+@media (min-width: 640px) {
+  .pill-dock,
+  .segment-dock {
+    gap: 8px;
+    padding: 5px;
+  }
+}
+
+.segment-pill {
+  padding: 6px 12px;
+  border-radius: 9999px;
+  transition: all 0.18s ease;
+}
+@media (min-width: 640px) {
+  .segment-pill {
+    padding: 8px 14px;
+  }
+}
+
+/* Typographic Affinity: Heading-to-subtext margin (6px-8px), Paragraph-to-paragraph (12px) */
+.heading-affinity {
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+@media (min-width: 640px) {
+  .heading-affinity {
+    margin-top: 8px;
+  }
+}
+
+p + p {
+  margin-top: 12px;
+  line-height: 1.48;
 }
 
 * {
@@ -80,6 +337,13 @@ body, html {
 }
 
 /* Modern High-Craft Display Typography Utilities */
+.font-fredoka {
+  font-family: 'Fredoka', 'Plus Jakarta Sans', system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .font-display {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 800;
@@ -101,6 +365,149 @@ body, html {
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================================================= */
+/* Apple HIG Typography Utility Classes (Encapsulated Size, Leading, Tracking)*/
+/* ========================================================================= */
+.type-large-title, .font-large-title {
+  font-size: var(--font-size-large-title);
+  line-height: var(--leading-large-title);
+  letter-spacing: var(--tracking-large-title);
+  font-weight: var(--weight-large-title);
+  text-wrap: balance;
+}
+
+.type-title-1, .font-title-1 {
+  font-size: var(--font-size-title-1);
+  line-height: var(--leading-title-1);
+  letter-spacing: var(--tracking-title-1);
+  font-weight: var(--weight-title-1);
+  text-wrap: balance;
+}
+
+.type-title-2, .font-title-2 {
+  font-size: var(--font-size-title-2);
+  line-height: var(--leading-title-2);
+  letter-spacing: var(--tracking-title-2);
+  font-weight: var(--weight-title-2);
+  text-wrap: balance;
+}
+
+.type-title-3, .font-title-3 {
+  font-size: var(--font-size-title-3);
+  line-height: var(--leading-title-3);
+  letter-spacing: var(--tracking-title-3);
+  font-weight: var(--weight-title-3);
+  text-wrap: balance;
+}
+
+.type-headline, .font-headline {
+  font-size: var(--font-size-headline);
+  line-height: var(--leading-headline);
+  letter-spacing: var(--tracking-headline);
+  font-weight: var(--weight-headline);
+}
+
+.type-body, .font-body {
+  font-size: var(--font-size-body);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body);
+  font-weight: var(--weight-body);
+  text-wrap: pretty;
+}
+
+.type-body-semibold {
+  font-size: var(--font-size-body);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body);
+  font-weight: 600;
+  text-wrap: pretty;
+}
+
+.type-callout, .font-callout {
+  font-size: var(--font-size-callout);
+  line-height: var(--leading-callout);
+  letter-spacing: var(--tracking-callout);
+  font-weight: var(--weight-callout);
+}
+
+.type-callout-semibold {
+  font-size: var(--font-size-callout);
+  line-height: var(--leading-callout);
+  letter-spacing: var(--tracking-callout);
+  font-weight: 600;
+}
+
+.type-callout-bold {
+  font-size: var(--font-size-callout);
+  line-height: var(--leading-callout);
+  letter-spacing: var(--tracking-callout);
+  font-weight: 700;
+}
+
+.type-subhead, .font-subhead {
+  font-size: var(--font-size-subhead);
+  line-height: var(--leading-subhead);
+  letter-spacing: var(--tracking-subhead);
+  font-weight: var(--weight-subhead);
+}
+
+.type-subhead-semibold {
+  font-size: var(--font-size-subhead);
+  line-height: var(--leading-subhead);
+  letter-spacing: var(--tracking-subhead);
+  font-weight: 600;
+}
+
+.type-footnote, .font-footnote {
+  font-size: var(--font-size-footnote);
+  line-height: var(--leading-footnote);
+  letter-spacing: var(--tracking-footnote);
+  font-weight: var(--weight-footnote);
+}
+
+.type-footnote-semibold {
+  font-size: var(--font-size-footnote);
+  line-height: var(--leading-footnote);
+  letter-spacing: var(--tracking-footnote);
+  font-weight: 600;
+}
+
+.type-caption-1, .font-caption-1 {
+  font-size: var(--font-size-caption-1);
+  line-height: var(--leading-caption-1);
+  letter-spacing: var(--tracking-caption-1);
+  font-weight: var(--weight-caption-1);
+}
+
+.type-caption-1-semibold {
+  font-size: var(--font-size-caption-1);
+  line-height: var(--leading-caption-1);
+  letter-spacing: var(--tracking-caption-1);
+  font-weight: 600;
+}
+
+.type-caption-2, .font-caption-2 {
+  font-size: var(--font-size-caption-2);
+  line-height: var(--leading-caption-2);
+  letter-spacing: var(--tracking-caption-2);
+  font-weight: var(--weight-caption-2);
+}
+
+.type-caption-2-semibold {
+  font-size: var(--font-size-caption-2);
+  line-height: var(--leading-caption-2);
+  letter-spacing: var(--tracking-caption-2);
+  font-weight: 600;
+}
+
+.type-hero {
+  font-size: clamp(32px, 6vw, 54px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  text-wrap: balance;
 }
 
 /* Typing Ergonomics: Zero Layout Shift */
@@ -180,27 +587,73 @@ body, html {
 .apple-glass-card {
   background: var(--sports-surface);
   border: 1px solid var(--sports-border);
-  border-radius: 24px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.75);
+}
+@media (min-width: 640px) {
+  .apple-glass-sheet,
+  .apple-glass-card {
+    padding: 16px;
+  }
+}
+@media (min-width: 1024px) {
+  .apple-glass-sheet,
+  .apple-glass-card {
+    padding: 18px;
+  }
 }
 
-/* Buttons */
+/* Interactive Elements: Primary Buttons & Inputs (py: 8px–10px, px: 14px–16px) */
 .btn-action-primary {
   background-color: var(--sports-primary);
   color: #FFFFFF;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.01em;
-  box-shadow: 0 6px 20px -2px rgba(37, 99, 235, 0.45);
+  padding: 8px 14px;
+  min-height: 38px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px -2px rgba(37, 99, 235, 0.4);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (min-width: 640px) {
+  .btn-action-primary {
+    padding: 10px 16px;
+    min-height: 40px;
+  }
 }
 .btn-action-primary:hover {
   background-color: var(--sports-primary-hover);
-  transform: translateY(-1.5px) scale(1.01);
-  box-shadow: 0 10px 24px -2px rgba(37, 99, 235, 0.55);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -2px rgba(37, 99, 235, 0.5);
 }
 .btn-action-primary:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
+}
+
+.input-compact {
+  padding: 8px 14px;
+  min-height: 38px;
+  border-radius: 12px;
+  background-color: rgba(6, 9, 19, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+@media (min-width: 640px) {
+  .input-compact {
+    padding: 10px 16px;
+    min-height: 40px;
+  }
+}
+.input-compact:focus {
+  border-color: var(--sports-volt);
+  box-shadow: 0 0 0 1px var(--sports-volt);
 }
 
 /* High-Speed Obsidian Athletic Running Track */
@@ -372,4 +825,30 @@ body, html {
 
 .animate-apple-in {
   animation: appleFadeInScale 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Chinese (ZH) Typography & Character Layout Enhancements */
+html[lang="zh"],
+html[data-lang="zh"],
+[lang="zh"] {
+  font-family: 'Plus Jakarta Sans', 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: 0.025em;
+  word-break: break-all;
+  line-height: 1.45;
+}
+
+/* Prevent CJK text clipping or cramped vertical bounds */
+html[lang="zh"] button,
+html[lang="zh"] span,
+html[lang="zh"] h1,
+html[lang="zh"] h2,
+html[lang="zh"] h3,
+html[lang="zh"] p {
+  line-height: 1.35;
+  min-height: max-content;
+}
+
+/* Seamless text translation fade */
+.i18n-fade {
+  transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }

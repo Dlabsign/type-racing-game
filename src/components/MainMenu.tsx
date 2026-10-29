@@ -1,6 +1,13 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { StadiumPerspectiveBg } from './StadiumPerspectiveBg';
 import { playButtonClick, playModalOpen, playModalClose } from '@/utils/audio';
+import { UserProfile, LeaderboardEntry } from '@/types/auth';
+import { fetchTopLeaderboard } from '@/services/firestoreService';
+import { AchievementsGalleryModal } from './AchievementsGalleryModal';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { useI18n } from '@/i18n/I18nContext';
 import {
   UserIcon,
   PlayIcon,
@@ -11,29 +18,38 @@ import {
   HelpCircleIcon,
   CloseIcon,
   GaugeIcon,
-  ZapIcon
+  SettingsIcon
 } from './icons/Icons';
 
 interface MainMenuProps {
   playerName: string;
   playerLevel?: number;
   soundEnabled?: boolean;
+  userProfile?: UserProfile | null;
+  isAuthenticated?: boolean;
   onQuickRace: () => void;
   onTournament?: () => void;
   onPractice?: () => void;
   onOpenSettings?: () => void;
+  onOpenAuth?: () => void;
 }
 
 export const MainMenu: React.FC<MainMenuProps> = ({
   playerName = 'Guest',
   playerLevel = 1,
   soundEnabled = true,
+  userProfile = null,
+  isAuthenticated = false,
   onQuickRace,
   onTournament,
   onPractice,
-  onOpenSettings
+  onOpenSettings,
+  onOpenAuth
 }) => {
+  const { t } = useI18n();
   const [activeModal, setActiveModal] = useState<'leaderboard' | 'achievements' | 'howToPlay' | null>(null);
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
   // Close modal on ESC key
   useEffect(() => {
@@ -56,6 +72,17 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   const handleOpenDockModal = (modal: 'leaderboard' | 'achievements' | 'howToPlay') => {
     playModalOpen(soundEnabled);
     setActiveModal(modal);
+    if (modal === 'leaderboard') {
+      setLoadingLeaderboard(true);
+      fetchTopLeaderboard(10)
+        .then((records) => {
+          setLeaderboardData(records);
+        })
+        .catch(console.warn)
+        .finally(() => {
+          setLoadingLeaderboard(false);
+        });
+    }
   };
 
   const handleCloseDockModal = () => {
@@ -69,130 +96,214 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       <StadiumPerspectiveBg />
 
       {/* 2. Top Header Bar */}
-      <header className="relative z-20 w-full px-[clamp(1rem,3dvw,2rem)] pt-[clamp(0.5rem,1.5vh,1.25rem)] pb-1 flex items-center justify-between shrink-0">
+      <header className="relative z-20 w-full px-4 sm:px-6 lg:px-8 pt-3 pb-1.5 flex items-center justify-between shrink-0">
         {/* Top-Left: Floating frosted pill card displaying user profile status */}
-        <div className="apple-glass-pill px-3.5 py-1.5 flex items-center gap-2.5 transition hover:border-white/25 cursor-pointer bg-[#0B101D]/90 shadow-md border border-white/14">
-          <div className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center shrink-0 border border-white/15">
-            <UserIcon className="w-4 h-4 text-[#CCFF00]" />
+        <button
+          type="button"
+          onClick={() => {
+            playButtonClick(soundEnabled);
+            if (onOpenAuth) onOpenAuth();
+          }}
+          title={isAuthenticated ? t('manage_account', 'Manage Account') : t('login', 'Sign In')}
+          className="apple-glass-pill px-3 py-1.5 flex items-center gap-2 transition hover:border-[#CCFF00]/50 hover:bg-[#0B101D] cursor-pointer bg-[#0B101D]/90 shadow-md border border-white/14 active:scale-97 text-left"
+        >
+          <div
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 border border-white/20 font-display font-black text-xs shadow-sm overflow-hidden"
+            style={{
+              backgroundColor: userProfile?.jerseyColor || '#CCFF00',
+              color: '#050811'
+            }}
+          >
+            {userProfile?.avatarUrl || userProfile?.photoURL ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={userProfile.avatarUrl || userProfile.photoURL}
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
+            ) : userProfile?.bibNumber ? (
+              `#${userProfile.bibNumber}`
+            ) : (
+              <UserIcon className="w-3.5 h-3.5 text-[#050811]" />
+            )}
           </div>
           <div className="leading-tight pr-1">
-            <div className="font-ui font-bold text-white text-xs sm:text-sm">
-              {playerName || 'Kamu'}
+            <div className="type-callout-semibold text-white flex items-center gap-1.5">
+              <span>{playerName || t('runner', 'Runner')}</span>
+              <span className={`w-2 h-2 rounded-full ${isAuthenticated ? 'bg-[#CCFF00] shadow-[0_0_8px_#CCFF00]' : 'bg-slate-500'}`} />
             </div>
-            <div className="font-ui font-medium text-slate-400 text-[10px] sm:text-xs">
-              Level {playerLevel}
+            <div className="type-caption-1 text-slate-400">
+              {t('level_tag', 'Level')} {playerLevel} • {isAuthenticated ? t('connected', 'Connected') : t('not_connected', 'Not Signed In')}
             </div>
           </div>
-        </div>
+        </button>
 
-        {/* Right side spacer for visual balance */}
-        <div className="w-8 h-8" />
+        {/* Right side Language Switcher (Segmented [EN] [MY] [CN]) & Settings */}
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher variant="segmented" soundEnabled={soundEnabled} />
+
+          {onOpenSettings && (
+            <button
+              type="button"
+              onClick={() => {
+                playButtonClick(soundEnabled);
+                onOpenSettings();
+              }}
+              title={t('settings', 'Settings')}
+              className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-xl bg-[#0B101D]/80 hover:bg-[#0B101D] backdrop-blur-xl border border-white/10 shadow-md active:scale-95 flex items-center justify-center text-slate-300 hover:text-white transition cursor-pointer"
+            >
+              <SettingsIcon className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </header>
 
-      {/* 3. Center Hero Branding & 3 Menu Cards (Proportionally Scaled with vh/clamp) */}
-      <main className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 py-[clamp(0.25rem,1.2vh,1rem)] shrink-0 my-auto">
+      {/* 3. Center Hero Branding & 3 Menu Cards */}
+      <main className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-2 shrink-0 my-auto">
         {/* Hero Branding Lockup */}
-        <div className="text-center mb-[clamp(0.6rem,1.8vh,1.5rem)]">
-          <div className="inline-flex items-center justify-center gap-2 sm:gap-3">
-            <span className="font-display italic font-black text-[clamp(2.25rem,5.5vh,4.75rem)] leading-none text-white tracking-wide">
+        <div className="text-center mb-3 sm:mb-4">
+          <div className="inline-flex items-center justify-center gap-2 sm:gap-2.5">
+            <span className="type-hero italic text-white">
               TYPE
             </span>
 
             {/* Runner silhouette & speed streaks */}
-            <div className="relative w-[clamp(36px,5vh,52px)] h-[clamp(24px,3.6vh,38px)] flex items-center justify-center">
+            <div className="relative w-10 h-7 sm:w-12 sm:h-8 flex items-center justify-center">
               <svg className="absolute inset-0 w-full h-full" viewBox="0 0 80 50">
                 <line x1="8" y1="16" x2="42" y2="16" stroke="#CCFF00" strokeWidth="3.5" strokeLinecap="round" />
                 <line x1="2" y1="26" x2="38" y2="26" stroke="#CCFF00" strokeWidth="4.2" strokeLinecap="round" />
                 <line x1="12" y1="36" x2="46" y2="36" stroke="#CCFF00" strokeWidth="3.5" strokeLinecap="round" />
               </svg>
-              <svg className="w-[clamp(20px,3.2vh,28px)] h-[clamp(20px,3.2vh,28px)] ml-2 relative z-10" viewBox="0 0 24 24" fill="#CCFF00">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 ml-2 relative z-10" viewBox="0 0 24 24" fill="#CCFF00">
                 <circle cx="13.5" cy="5.5" r="2.5" />
                 <path d="M17.5 10.5c-.8 0-1.5-.4-1.9-1l-1.3-1.8c-.4-.5-1-.8-1.7-.8-.7 0-1.3.4-1.7.9l-2.4 3.2c-.3.4-.3.9 0 1.3l2.2 3.1v4.6c0 .6.4 1 1 1s1-.4 1-1v-4.2l-1.5-2.1 1.4-1.8 1.9 2.7c.4.6 1.1 1 1.9 1h3.1c.6 0 1-.4 1-1s-.4-1-1-1h-2.9l-1.8-2.6.8-1.1c.2-.3.6-.5 1-.5h3.4c.6 0 1-.4 1-1s-.4-1-1-1h-3.4zM6 13.8l2.5-3.3-1.6-1.6-2.5 3.3c-.4.5-.3 1.2.2 1.6.4.3 1 .2 1.4-.2z" />
               </svg>
             </div>
           </div>
 
-          <div className="font-display italic font-black text-[clamp(2.25rem,5.5vh,4.75rem)] leading-none text-[#CCFF00] tracking-wide mt-0.5 drop-shadow-[0_0_20px_rgba(204,255,0,0.35)]">
+          <div className="type-hero italic text-[#CCFF00] mt-0.5 drop-shadow-[0_0_20px_rgba(204,255,0,0.35)]">
             RACING
           </div>
 
-          <p className="font-sports font-semibold text-slate-400 tracking-wider text-[clamp(9px,1.2vh,11px)] mt-1.5">
-            LATIHAN KETIK CEPAT & PRESISI
+          <p className="type-caption-1-semibold text-slate-400 mt-1.5 uppercase max-w-[65ch]">
+            {t('app_subtitle', 'SPEED AND ACCURACY TYPING SPRINT')}
           </p>
         </div>
 
-        {/* 3 Main Menu Cards */}
-        <div className="w-full max-w-[360px] sm:max-w-[400px] flex flex-col gap-[clamp(0.4rem,1.1vh,0.75rem)]">
-          {/* Card 1: QUICK RACE (Athletic Blue) */}
+        {/* 3 Main Menu Action Cards (High-Interactivity Kinetic Buttons) */}
+        <div className="w-full max-w-[380px] sm:max-w-[420px] flex flex-col gap-2.5">
+          {/* Card 1: QUICK RACE (Athletic Volt & Electric Blue) */}
           <button
             type="button"
             onClick={() => handleAction(onQuickRace)}
-            className="w-full p-[clamp(0.45rem,1vh,0.75rem)] px-3.5 min-h-[clamp(48px,6.8vh,62px)] flex items-center gap-3 sm:gap-3.5 text-left cursor-pointer group bg-[#0B101D]/90 hover:bg-[#0F1626] border border-white/12 hover:border-[#CCFF00]/50 rounded-xl sm:rounded-2xl transition-all shadow-[0_6px_20px_rgba(0,0,0,0.5)] active:scale-97"
+            className="group relative w-full py-3.5 px-5 sm:px-6 min-h-[52px] sm:min-h-[56px] flex items-center justify-between text-left cursor-pointer overflow-hidden rounded-xl bg-[#0B101D]/90 hover:bg-[#0F172A] border border-white/12 hover:border-[#CCFF00]/80 shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_28px_rgba(204,255,0,0.25)] transition-all duration-300 active:scale-[0.98] select-none hover:-translate-y-0.5 before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/12 before:to-transparent before:transition-transform before:duration-700 before:ease-out"
           >
-            <div className="w-[clamp(36px,4.8vh,44px)] h-[clamp(36px,4.8vh,44px)] rounded-xl bg-blue-600 flex items-center justify-center shrink-0 text-white group-hover:scale-105 transition-transform shadow-md shadow-blue-500/30">
-              <PlayIcon className="w-[clamp(18px,2.4vh,22px)] h-[clamp(18px,2.4vh,22px)] fill-current ml-0.5" />
+            {/* Left Ambient Dynamic Glow */}
+            <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-[#CCFF00]/15 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            {/* Left Content: Interactive Speed Pill + Direct Title */}
+            <div className="relative z-10 flex items-center gap-3.5">
+              <span className="w-1.5 h-4.5 rounded-full bg-[#CCFF00]/60 group-hover:bg-[#CCFF00] group-hover:h-6 group-hover:w-2 group-hover:shadow-[0_0_12px_#CCFF00] transition-all duration-300 ease-out" />
+              <span className="font-sports font-black text-lg sm:text-xl tracking-wider uppercase text-white group-hover:text-[#CCFF00] group-hover:translate-x-1 transition-all duration-300">
+                {t('quick_race', 'Quick Race')}
+              </span>
             </div>
-            <div className="leading-tight">
-              <div className="font-display font-black text-[clamp(0.95rem,2vh,1.25rem)] text-white tracking-wider uppercase leading-none">
-                QUICK RACE
-              </div>
-              <div className="font-sports text-[clamp(10px,1.2vh,12px)] text-slate-400 font-medium mt-0.5 leading-tight">
-                Adu cepat langsung gas bareng AI
+
+            {/* Right Content: Dynamic Interactive Sprint Arrow */}
+            <div className="relative z-10 flex items-center gap-1.5 text-slate-500 group-hover:text-[#CCFF00] transition-colors duration-300">
+              <span className="hidden sm:inline-block font-mono text-[11px] font-bold tracking-widest uppercase opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300 text-slate-400 group-hover:text-[#CCFF00]">
+                GO
+              </span>
+              <div className="flex items-center -space-x-1.5 group-hover:translate-x-1 transition-transform duration-300">
+                <svg className="w-4 h-4 stroke-[2.8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+                <svg className="w-4 h-4 stroke-[2.8] opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             </div>
           </button>
 
-          {/* Card 2: TOURNAMENT (Athletic Emerald) */}
+          {/* Card 2: TOURNAMENT (Championship Gold) */}
           <button
             type="button"
             onClick={() => handleAction(onTournament || onQuickRace)}
-            className="w-full p-[clamp(0.45rem,1vh,0.75rem)] px-3.5 min-h-[clamp(48px,6.8vh,62px)] flex items-center gap-3 sm:gap-3.5 text-left cursor-pointer group bg-[#0B101D]/90 hover:bg-[#0F1626] border border-white/12 hover:border-[#CCFF00]/50 rounded-xl sm:rounded-2xl transition-all shadow-[0_6px_20px_rgba(0,0,0,0.5)] active:scale-97"
+            className="group relative w-full py-3.5 px-5 sm:px-6 min-h-[52px] sm:min-h-[56px] flex items-center justify-between text-left cursor-pointer overflow-hidden rounded-xl bg-[#0B101D]/90 hover:bg-[#0F172A] border border-white/12 hover:border-amber-400/80 shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_28px_rgba(251,191,36,0.25)] transition-all duration-300 active:scale-[0.98] select-none hover:-translate-y-0.5 before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/12 before:to-transparent before:transition-transform before:duration-700 before:ease-out"
           >
-            <div className="w-[clamp(36px,4.8vh,44px)] h-[clamp(36px,4.8vh,44px)] rounded-xl bg-emerald-600 flex items-center justify-center shrink-0 text-white group-hover:scale-105 transition-transform shadow-md shadow-emerald-500/30">
-              <TrophyIcon className="w-[clamp(18px,2.4vh,22px)] h-[clamp(18px,2.4vh,22px)]" />
+            {/* Left Ambient Dynamic Glow */}
+            <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-amber-400/15 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            {/* Left Content: Interactive Speed Pill + Direct Title */}
+            <div className="relative z-10 flex items-center gap-3.5">
+              <span className="w-1.5 h-4.5 rounded-full bg-amber-400/60 group-hover:bg-amber-400 group-hover:h-6 group-hover:w-2 group-hover:shadow-[0_0_12px_#F59E0B] transition-all duration-300 ease-out" />
+              <span className="font-sports font-black text-lg sm:text-xl tracking-wider uppercase text-white group-hover:text-amber-300 group-hover:translate-x-1 transition-all duration-300">
+                {t('tournament', 'Tournament')}
+              </span>
             </div>
-            <div className="leading-tight">
-              <div className="font-display font-black text-[clamp(0.95rem,2vh,1.25rem)] text-white tracking-wider uppercase leading-none">
-                TOURNAMENT
-              </div>
-              <div className="font-sports text-xs text-slate-400 font-medium mt-0.5 leading-tight">
-                3 ronde gugur, sikat sampai final
+
+            {/* Right Content: Dynamic Interactive Sprint Arrow */}
+            <div className="relative z-10 flex items-center gap-1.5 text-slate-500 group-hover:text-amber-400 transition-colors duration-300">
+              <span className="hidden sm:inline-block font-mono text-[11px] font-bold tracking-widest uppercase opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300 text-slate-400 group-hover:text-amber-400">
+                CUP
+              </span>
+              <div className="flex items-center -space-x-1.5 group-hover:translate-x-1 transition-transform duration-300">
+                <svg className="w-4 h-4 stroke-[2.8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+                <svg className="w-4 h-4 stroke-[2.8] opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             </div>
           </button>
 
-          {/* Card 3: PRACTICE (Athletic Amber) */}
+          {/* Card 3: PRACTICE (Electric Cyan) */}
           <button
             type="button"
             onClick={() => handleAction(onPractice || onQuickRace)}
-            className="w-full p-[clamp(0.45rem,1vh,0.75rem)] px-3.5 min-h-[clamp(48px,6.8vh,62px)] flex items-center gap-3 sm:gap-3.5 text-left cursor-pointer group bg-[#0B101D]/90 hover:bg-[#0F1626] border border-white/12 hover:border-[#CCFF00]/50 rounded-xl sm:rounded-2xl transition-all shadow-[0_6px_20px_rgba(0,0,0,0.5)] active:scale-97"
+            className="group relative w-full py-3.5 px-5 sm:px-6 min-h-[52px] sm:min-h-[56px] flex items-center justify-between text-left cursor-pointer overflow-hidden rounded-xl bg-[#0B101D]/90 hover:bg-[#0F172A] border border-white/12 hover:border-cyan-400/80 shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_28px_rgba(6,182,212,0.25)] transition-all duration-300 active:scale-[0.98] select-none hover:-translate-y-0.5 before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/12 before:to-transparent before:transition-transform before:duration-700 before:ease-out"
           >
-            <div className="w-[clamp(36px,4.8vh,44px)] h-[clamp(36px,4.8vh,44px)] rounded-xl bg-amber-500 flex items-center justify-center shrink-0 text-white group-hover:scale-105 transition-transform shadow-md shadow-amber-500/30">
-              <KeyboardIcon className="w-[clamp(18px,2.4vh,22px)] h-[clamp(18px,2.4vh,22px)]" />
+            {/* Left Ambient Dynamic Glow */}
+            <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-cyan-400/15 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            {/* Left Content: Interactive Speed Pill + Direct Title */}
+            <div className="relative z-10 flex items-center gap-3.5">
+              <span className="w-1.5 h-4.5 rounded-full bg-cyan-400/60 group-hover:bg-cyan-400 group-hover:h-6 group-hover:w-2 group-hover:shadow-[0_0_12px_#06B6D4] transition-all duration-300 ease-out" />
+              <span className="font-sports font-black text-lg sm:text-xl tracking-wider uppercase text-white group-hover:text-cyan-300 group-hover:translate-x-1 transition-all duration-300">
+                {t('practice', 'Practice')}
+              </span>
             </div>
-            <div className="leading-tight">
-              <div className="font-display font-black text-[clamp(0.95rem,2vh,1.25rem)] text-white tracking-wider uppercase leading-none">
-                PRACTICE
-              </div>
-              <div className="font-sports text-xs text-slate-400 font-medium mt-0.5 leading-tight">
-                Santai asah ritme tanpa lawan
+
+            {/* Right Content: Dynamic Interactive Sprint Arrow */}
+            <div className="relative z-10 flex items-center gap-1.5 text-slate-500 group-hover:text-cyan-400 transition-colors duration-300">
+              <span className="hidden sm:inline-block font-mono text-[11px] font-bold tracking-widest uppercase opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300 text-slate-400 group-hover:text-cyan-400">
+                SOLO
+              </span>
+              <div className="flex items-center -space-x-1.5 group-hover:translate-x-1 transition-transform duration-300">
+                <svg className="w-4 h-4 stroke-[2.8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+                <svg className="w-4 h-4 stroke-[2.8] opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             </div>
           </button>
         </div>
       </main>
 
-      {/* 4. Floating Dock Container (Touch-friendly min 40px) */}
-      <footer className="relative z-20 w-full px-4 pb-[clamp(0.5rem,1.8vh,1.25rem)] pt-1 flex justify-center shrink-0">
-        <div className="apple-glass-pill px-2.5 sm:px-3.5 py-1 sm:py-1.5 flex items-center gap-1 sm:gap-2 bg-[#0B101D]/90 border border-white/14 shadow-[0_12px_32px_rgba(0,0,0,0.7)]">
+      {/* 4. Floating Dock Container (Strict 6px-8px Pill Cadence) */}
+      <footer className="relative z-20 w-full px-4 sm:px-6 lg:px-8 pb-3 sm:pb-4 pt-1 flex justify-center shrink-0">
+        <div className="pill-dock px-3 py-1 flex items-center gap-1.5 sm:gap-2 bg-[#0B101D]/90 border border-white/14 shadow-[0_12px_32px_rgba(0,0,0,0.7)]">
           {/* Dock Item 1: Leaderboard */}
           <button
             type="button"
             onClick={() => handleOpenDockModal('leaderboard')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[38px] rounded-full text-xs font-ui font-bold text-slate-300 hover:text-white hover:bg-white/10 active:scale-95 transition cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1 min-h-[36px] rounded-lg type-footnote-semibold text-slate-300 hover:text-white hover:bg-white/10 active:scale-95 transition cursor-pointer"
           >
             <MedalIcon className="w-3.5 h-3.5 text-[#F59E0B]" />
-            <span>LEADERBOARD</span>
+            <span>{t('leaderboard', 'Leaderboard')}</span>
           </button>
 
           <div className="w-[1px] h-3.5 bg-white/15" />
@@ -201,10 +312,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           <button
             type="button"
             onClick={() => handleOpenDockModal('achievements')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[38px] rounded-full text-xs font-ui font-bold text-slate-300 hover:text-white hover:bg-white/10 active:scale-95 transition cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1 min-h-[36px] rounded-lg type-footnote-semibold text-slate-300 hover:text-white hover:bg-white/10 active:scale-95 transition cursor-pointer"
           >
             <AwardIcon className="w-3.5 h-3.5 text-[#A855F7]" />
-            <span>ACHIEVEMENTS</span>
+            <span>{t('achievements', 'Achievements')}</span>
           </button>
 
           <div className="w-[1px] h-3.5 bg-white/15" />
@@ -213,10 +324,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           <button
             type="button"
             onClick={() => handleOpenDockModal('howToPlay')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[38px] rounded-full text-xs font-ui font-bold text-slate-300 hover:text-white hover:bg-white/10 active:scale-95 transition cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1 min-h-[36px] rounded-lg type-footnote-semibold text-slate-300 hover:text-white hover:bg-white/10 active:scale-95 transition cursor-pointer"
           >
             <HelpCircleIcon className="w-3.5 h-3.5 text-[#38BDF8]" />
-            <span>CARA MAIN</span>
+            <span>{t('how_to_play', 'How to Play')}</span>
           </button>
         </div>
       </footer>
@@ -228,44 +339,47 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       {/* 1. How To Play Modal */}
       {activeModal === 'howToPlay' && (
         <div
-          className="fixed inset-0 z-50 bg-[#050811]/85 backdrop-blur-md flex items-center justify-center p-[clamp(0.75rem,3vw,2rem)] animate-apple-in select-none"
+          className="fixed inset-0 z-50 bg-[#050811]/85 backdrop-blur-md flex items-center justify-center p-3.5 sm:p-4 animate-apple-in select-none"
           onClick={handleCloseDockModal}
         >
           <div
-            className="bg-[#0B101D] border border-white/14 max-w-md w-full p-[clamp(1.25rem,3.5vw,2rem)] text-white rounded-2xl sm:rounded-3xl shadow-[0_24px_60px_rgba(0,0,0,0.85)] max-h-[88dvh] overflow-y-auto overscroll-contain"
+            className="swiss-card w-[min(92vw,460px)] p-3.5 sm:p-4.5 text-white shadow-[0_24px_60px_rgba(0,0,0,0.85)] max-h-[88dvh] overflow-y-auto overscroll-contain"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-white/12 pb-3 mb-4">
-              <h3 className="font-display text-xl font-black text-white flex items-center gap-2.5">
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-2 mb-2.5">
+              <h3 className="type-title-2 text-white flex items-center gap-2">
                 <HelpCircleIcon className="w-5 h-5 text-[#38BDF8]" />
-                Cara Main
+                {t('how_to_play', 'How to Play')}
               </h3>
               <button
                 type="button"
                 onClick={handleCloseDockModal}
-                className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-slate-300 hover:text-white transition cursor-pointer"
+                className="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-slate-300 hover:text-white transition cursor-pointer"
               >
-                <CloseIcon className="w-4 h-4" />
+                <CloseIcon className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="space-y-3 font-ui text-xs sm:text-sm text-slate-300 leading-relaxed">
-              <div className="flex items-start gap-3 bg-[#060913] p-3.5 rounded-2xl border border-white/10">
-                <PlayIcon className="w-5 h-5 text-[#CCFF00] shrink-0 mt-0.5 fill-current" />
+            <div className="space-y-2 type-subhead text-slate-300 leading-[1.48] max-w-[65ch]">
+              <div className="flex items-start gap-2.5 bg-[#060913] p-2.5 sm:p-3 rounded-xl border border-white/[0.08]">
+                <PlayIcon className="w-4 h-4 text-[#CCFF00] shrink-0 mt-0.5 fill-current" />
                 <div>
-                  <strong className="text-white">Balapan Sprint 1 Putaran:</strong> Ketik kalimat target secepat mungkin untuk menggerakkan pelarimu menuju garis finis.
+                  <strong className="text-white type-subhead-semibold">{t('how_to_play_rule1_title', '1-Lap Sprint:')} </strong>
+                  {t('how_to_play_rule1_desc', 'Type the displayed sentences quickly and accurately to propel your runner across the finish line.')}
                 </div>
               </div>
-              <div className="flex items-start gap-3 bg-[#060913] p-3.5 rounded-2xl border border-white/10">
-                <GaugeIcon className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2.5 bg-[#060913] p-2.5 sm:p-3 rounded-xl border border-white/[0.08]">
+                <GaugeIcon className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-white">Akurasi Menentukan Kemenangan:</strong> Salah ketik akan memicu rem sesaat. Pertahankan akurasi di atas 95% untuk kecepatan maksimum!
+                  <strong className="text-white type-subhead-semibold">{t('how_to_play_rule2_title', 'Accuracy is Paramount:')} </strong>
+                  {t('how_to_play_rule2_desc', 'Typing mistakes slow down your stride. Keep accuracy above 95% to maintain top acceleration.')}
                 </div>
               </div>
-              <div className="flex items-start gap-3 bg-[#060913] p-3.5 rounded-2xl border border-white/10">
-                <KeyboardIcon className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2.5 bg-[#060913] p-2.5 sm:p-3 rounded-xl border border-white/[0.08]">
+                <KeyboardIcon className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-white">Auto-Focus Keyboard:</strong> Ketik langsung tanpa perlu mengklik kotak teks. Tekan [ESC] kapan saja untuk jeda balap.
+                  <strong className="text-white type-subhead-semibold">{t('how_to_play_rule3_title', 'Auto-Focus Keyboard:')} </strong>
+                  {t('how_to_play_rule3_desc', 'Type directly without clicking text fields. Press [Esc] to pause the race.')}
                 </div>
               </div>
             </div>
@@ -273,9 +387,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             <button
               type="button"
               onClick={handleCloseDockModal}
-              className="mt-6 w-full btn-action-primary py-3.5 min-h-[48px] text-sm font-display font-black uppercase tracking-wider cursor-pointer rounded-xl active:scale-97 shadow-md"
+              className="mt-3.5 w-full btn-action-primary py-2 px-3.5 min-h-[38px] type-headline uppercase tracking-wider cursor-pointer rounded-xl active:scale-97 shadow-md"
             >
-              SIAP, GAS BALAP!
+              {t('close', 'Close')}
             </button>
           </div>
         </div>
@@ -284,156 +398,149 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       {/* 2. Leaderboard Modal */}
       {activeModal === 'leaderboard' && (
         <div
-          className="fixed inset-0 z-50 bg-[#050811]/85 backdrop-blur-md flex items-center justify-center p-[clamp(0.75rem,3vw,2rem)] animate-apple-in select-none"
+          className="fixed inset-0 z-50 bg-[#050811]/85 backdrop-blur-md flex items-center justify-center p-3.5 sm:p-4 animate-apple-in select-none"
           onClick={handleCloseDockModal}
         >
           <div
-            className="bg-[#0B101D] border border-white/14 max-w-md w-full p-[clamp(1.25rem,3.5vw,2rem)] text-white rounded-2xl sm:rounded-3xl shadow-[0_24px_60px_rgba(0,0,0,0.85)] max-h-[88dvh] overflow-y-auto overscroll-contain"
+            className="swiss-card w-[min(92vw,480px)] p-3.5 sm:p-4.5 text-white shadow-[0_24px_60px_rgba(0,0,0,0.85)] max-h-[88dvh] overflow-y-auto overscroll-contain"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-white/12 pb-3 mb-4">
-              <h3 className="font-display text-xl font-black text-white flex items-center gap-2.5">
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-2 mb-2.5">
+              <h3 className="type-title-2 text-white flex items-center gap-2">
                 <MedalIcon className="w-5 h-5 text-amber-400" />
-                Papan Peringkat
+                {t('leaderboard', 'Leaderboard')}
               </h3>
               <button
                 type="button"
                 onClick={handleCloseDockModal}
-                className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-slate-300 hover:text-white transition cursor-pointer"
+                className="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-slate-300 hover:text-white transition cursor-pointer"
               >
-                <CloseIcon className="w-4 h-4" />
+                <CloseIcon className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="space-y-2.5 font-ui">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#060913] border border-amber-500/30">
-                <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-[#050811] flex items-center justify-center text-xs font-black font-display shadow-sm">1</span>
-                  <span className="font-bold text-sm text-white">FlashSprinter</span>
+            <div className="space-y-1.5">
+              {loadingLeaderboard ? (
+                <div className="py-6 text-center text-slate-400 type-footnote animate-pulse">
+                  {t('loading_leaderboard', 'Loading leaderboard...')}
                 </div>
-                <div className="font-stat-num text-xs sm:text-sm font-bold text-[#CCFF00]">
-                  124 WPM <span className="text-slate-400 font-normal">(100%)</span>
-                </div>
-              </div>
+              ) : leaderboardData.length > 0 ? (
+                leaderboardData.map((entry, idx) => {
+                  const isCurrent = entry.displayName === playerName;
+                  const rankBadge =
+                    idx === 0
+                      ? 'bg-amber-500 text-[#050811]'
+                      : idx === 1
+                      ? 'bg-slate-300 text-[#050811]'
+                      : idx === 2
+                      ? 'bg-amber-700 text-white'
+                      : 'bg-white/10 text-slate-300';
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#060913] border border-white/10">
-                <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-slate-300 text-[#050811] flex items-center justify-center text-xs font-black font-display">2</span>
-                  <span className="font-bold text-sm text-white">TurboFingers</span>
-                </div>
-                <div className="font-stat-num text-xs sm:text-sm font-bold text-[#CCFF00]">
-                  112 WPM <span className="text-slate-400 font-normal">(99%)</span>
-                </div>
-              </div>
+                  return (
+                    <div
+                      key={entry.userId || idx}
+                      className={`flex items-center justify-between py-2.5 px-3 sm:px-3.5 rounded-xl border transition ${
+                        isCurrent
+                          ? 'bg-[#CCFF00]/10 border-[#CCFF00]/40'
+                          : 'bg-[#060913] border-white/[0.08]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className={`w-5 h-5 rounded-full flex items-center justify-center type-caption-1-semibold shadow-sm ${rankBadge}`}
+                        >
+                          {idx + 1}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ backgroundColor: entry.jerseyColor || '#CCFF00' }}
+                          />
+                          <span
+                            className={`type-callout-semibold truncate max-w-[150px] ${
+                              isCurrent ? 'text-[#CCFF00]' : 'text-white'
+                            }`}
+                          >
+                            {entry.displayName || 'Anonymous'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-stat-num type-callout-bold text-[#CCFF00]">
+                          {entry.highestWpm} WPM
+                        </div>
+                        {entry.careerScore > 0 && (
+                          <div className="type-caption-2 text-slate-400 font-mono">
+                            {entry.careerScore} pts
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <>
+                  <div className="flex items-center justify-between py-2.5 px-3 sm:px-3.5 rounded-xl bg-[#060913] border border-amber-500/30">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-amber-500 text-[#050811] flex items-center justify-center type-caption-1-semibold shadow-sm">1</span>
+                      <span className="type-callout-semibold text-white">FlashSprinter</span>
+                    </div>
+                    <div className="font-stat-num type-callout-bold text-[#CCFF00]">
+                      124 WPM <span className="text-slate-400 type-caption-1">(100%)</span>
+                    </div>
+                  </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#060913] border border-white/10">
-                <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-amber-700 text-white flex items-center justify-center text-xs font-black font-display">3</span>
-                  <span className="font-bold text-sm text-white">PrecisionKing</span>
-                </div>
-                <div className="font-stat-num text-xs sm:text-sm font-bold text-[#CCFF00]">
-                  98 WPM <span className="text-slate-400 font-normal">(98%)</span>
-                </div>
-              </div>
+                  <div className="flex items-center justify-between py-2.5 px-3 sm:px-3.5 rounded-xl bg-[#060913] border border-white/[0.08]">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-slate-300 text-[#050811] flex items-center justify-center type-caption-1-semibold">2</span>
+                      <span className="type-callout-semibold text-white">TurboFingers</span>
+                    </div>
+                    <div className="font-stat-num type-callout-bold text-[#CCFF00]">
+                      112 WPM <span className="text-slate-400 type-caption-1">(99%)</span>
+                    </div>
+                  </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#CCFF00]/10 border border-[#CCFF00]/40 text-white">
-                <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[#CCFF00] text-[#050811] flex items-center justify-center text-xs font-black font-display shadow-sm">4</span>
-                  <span className="font-bold text-sm text-[#CCFF00]">{playerName || 'Kamu'}</span>
-                </div>
-                <div className="font-stat-num text-xs sm:text-sm font-bold text-[#CCFF00]">
-                  92 WPM <span className="text-slate-300 font-normal">(97%)</span>
-                </div>
-              </div>
+                  <div className="flex items-center justify-between py-2.5 px-3 sm:px-3.5 rounded-xl bg-[#060913] border border-white/[0.08]">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-amber-700 text-white flex items-center justify-center type-caption-1-semibold">3</span>
+                      <span className="type-callout-semibold text-white">PrecisionKing</span>
+                    </div>
+                    <div className="font-stat-num type-callout-bold text-[#CCFF00]">
+                      98 WPM <span className="text-slate-400 type-caption-1">(98%)</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between py-2.5 px-3 sm:px-3.5 rounded-xl bg-[#CCFF00]/10 border border-[#CCFF00]/40 text-white">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-[#CCFF00] text-[#050811] flex items-center justify-center type-caption-1-semibold shadow-sm">4</span>
+                      <span className="type-callout-semibold text-[#CCFF00]">{playerName || 'Player'}</span>
+                    </div>
+                    <div className="font-stat-num type-callout-bold text-[#CCFF00]">
+                      92 WPM <span className="text-slate-300 type-caption-1">(97%)</span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <button
               type="button"
               onClick={handleCloseDockModal}
-              className="mt-6 w-full bg-white/10 hover:bg-white/20 active:scale-97 text-slate-200 font-ui font-bold py-3 min-h-[44px] rounded-xl cursor-pointer transition"
+              className="mt-3.5 w-full bg-white/10 hover:bg-white/20 active:scale-97 text-slate-200 type-headline py-2 px-3.5 min-h-[38px] rounded-xl cursor-pointer transition"
             >
-              Tutup [ESC]
+              {t('close', 'Close')}
             </button>
           </div>
         </div>
       )}
 
-      {/* 3. Achievements Modal */}
-      {activeModal === 'achievements' && (
-        <div
-          className="fixed inset-0 z-50 bg-[#050811]/85 backdrop-blur-md flex items-center justify-center p-[clamp(0.75rem,3vw,2rem)] animate-apple-in select-none"
-          onClick={handleCloseDockModal}
-        >
-          <div
-            className="bg-[#0B101D] border border-white/14 max-w-md w-full p-[clamp(1.25rem,3.5vw,2rem)] text-white rounded-2xl sm:rounded-3xl shadow-[0_24px_60px_rgba(0,0,0,0.85)] max-h-[88dvh] overflow-y-auto overscroll-contain"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-white/12 pb-3 mb-4">
-              <h3 className="font-display text-xl font-black text-white flex items-center gap-2.5">
-                <AwardIcon className="w-5 h-5 text-purple-400" />
-                Pencapaian
-              </h3>
-              <button
-                type="button"
-                onClick={handleCloseDockModal}
-                className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-slate-300 hover:text-white transition cursor-pointer"
-              >
-                <CloseIcon className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-3 font-ui">
-              <div className="flex items-center gap-3 p-3 rounded-2xl border bg-emerald-500/10 border-emerald-500/30 text-white">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
-                  <ZapIcon className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <div className="font-bold text-xs sm:text-sm text-white">First Sprint</div>
-                  <div className="text-[11px] text-slate-400">Selesaikan balapan pertamamu</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-2xl border bg-[#CCFF00]/10 border-[#CCFF00]/30 text-white">
-                <div className="w-9 h-9 rounded-xl bg-[#CCFF00]/20 flex items-center justify-center shrink-0">
-                  <ZapIcon className="w-5 h-5 text-[#CCFF00]" />
-                </div>
-                <div>
-                  <div className="font-bold text-xs sm:text-sm text-white">Speed Demon</div>
-                  <div className="text-[11px] text-slate-400">Raih kecepatan di atas 80 WPM</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-2xl border bg-[#060913] border-white/10 text-slate-500 opacity-60">
-                <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
-                  <MedalIcon className="w-5 h-5 text-slate-400" />
-                </div>
-                <div>
-                  <div className="font-bold text-xs sm:text-sm text-slate-300">Flawless Victory</div>
-                  <div className="text-[11px] text-slate-500">Menangkan balapan dengan 100% akurasi</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-2xl border bg-[#060913] border-white/10 text-slate-500 opacity-60">
-                <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
-                  <TrophyIcon className="w-5 h-5 text-slate-400" />
-                </div>
-                <div>
-                  <div className="font-bold text-xs sm:text-sm text-slate-300">Grand Champion</div>
-                  <div className="text-[11px] text-slate-500">Kalahkan AI tingkat Mahir</div>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleCloseDockModal}
-              className="mt-6 w-full bg-white/10 hover:bg-white/20 active:scale-97 text-slate-200 font-ui font-bold py-3 min-h-[44px] rounded-xl cursor-pointer transition"
-            >
-              Tutup [ESC]
-            </button>
-          </div>
-        </div>
-      )}
+      {/* 3. Achievements Gallery Modal */}
+      <AchievementsGalleryModal
+        isOpen={activeModal === 'achievements'}
+        soundEnabled={soundEnabled}
+        userProfileUnlockedIds={userProfile?.unlockedAchievements || []}
+        onClose={handleCloseDockModal}
+      />
     </div>
   );
 };

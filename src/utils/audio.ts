@@ -207,3 +207,37 @@ export function playTrophyFanfare(soundEnabled: boolean = true): void {
     }, idx * 95);
   });
 }
+
+/**
+ * High-frequency crystal chime for achievement unlocks (Apple-grade harmonic bell).
+ */
+export function playAchievementChime(soundEnabled: boolean = true): void {
+  const ctx = ensureAudio(soundEnabled);
+  if (!ctx) return;
+  try {
+    const now = ctx.currentTime;
+    // Harmonic notes: E6, G#6, B6, E7
+    const arpeggio = [1318.51, 1661.22, 1975.53, 2637.02];
+
+    arpeggio.forEach((freq, index) => {
+      const noteTime = now + index * 0.07;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = index % 2 === 0 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(freq, noteTime);
+
+      // Gentle crystal decay
+      gain.gain.setValueAtTime(0.14, noteTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.45);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(noteTime);
+      osc.stop(noteTime + 0.46);
+    });
+  } catch {
+    // Ignore audio context errors
+  }
+}

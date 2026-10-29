@@ -2,7 +2,7 @@ import React from 'react';
 
 export const StadiumPerspectiveBg: React.FC = () => {
   return (
-    <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none z-0">
+    <div className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none select-none z-0">
       <svg
         className="w-full h-full object-cover"
         viewBox="0 0 1440 900"

@@ -1,6 +1,6 @@
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
 
-export type SentenceTheme = 'motivasi' | 'fakta' | 'produktivitas' | 'english';
+export type SentenceTheme = 'english' | 'malay' | 'chinese' | 'motivasi' | 'fakta' | 'produktivitas';
 
 export type GameStatus = 'idle' | 'countdown' | 'racing' | 'paused' | 'finished';
 

@@ -34,21 +34,20 @@ export const RunningTrack: React.FC<RunningTrackProps> = ({
           const wpmForAnim = Math.max(35, runner.wpm || 60);
           const cycleSec = Math.max(0.16, Math.min(0.42, 24 / wpmForAnim));
 
-          // Visual track progress mapped from start block (2%) to finish line (93.5%)
+          // Visual track progress mapped dynamically to prevent escape outside lane boundaries
           const progressClamp = Math.min(1, Math.max(0, runner.visualProgress));
-          const trackLeftPct = 2 + progressClamp * 91.5;
 
           return (
             <div
               key={runner.id}
-              className={`track-lane flex-1 min-h-[clamp(48px,11.5dvh,96px)] flex items-center relative overflow-hidden ${
+              className={`track-lane flex-1 min-h-[clamp(40px,8.5dvh,88px)] flex items-center relative overflow-hidden ${
                 isPlayer ? 'player-lane-aura' : ''
               }`}
             >
               {/* Lane Telemetry (Left): Rank Circle & Runner Bib Name */}
-              <div className="w-[clamp(76px,14vw,160px)] shrink-0 z-20 flex items-center gap-[clamp(0.25rem,0.8vw,0.6rem)] pl-[clamp(0.4rem,1.2vw,1rem)]">
+              <div className="w-[clamp(68px,12vw,150px)] shrink-0 z-20 flex items-center gap-[clamp(0.2rem,0.6vw,0.5rem)] pl-[clamp(0.3rem,1vw,0.8rem)]">
                 <div
-                  className="w-[clamp(1.5rem,2.4vw,2rem)] h-[clamp(1.5rem,2.4vw,2rem)] rounded-full border border-white/80 flex items-center justify-center font-display font-black text-white text-[clamp(0.7rem,1.1vw,0.875rem)] shadow-md shrink-0"
+                  className="w-[clamp(1.35rem,2.2vw,1.85rem)] h-[clamp(1.35rem,2.2vw,1.85rem)] rounded-full border border-white/80 flex items-center justify-center font-display font-black text-white text-[clamp(0.65rem,1vw,0.85rem)] shadow-md shrink-0"
                   style={{
                     backgroundColor: runner.color,
                     color: isPlayer ? '#050811' : '#FFFFFF'
@@ -58,22 +57,22 @@ export const RunningTrack: React.FC<RunningTrackProps> = ({
                 </div>
 
                 {/* Desktop & Tablet Badge */}
-                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/12 bg-[#0E1526]/90 backdrop-blur-md shadow-sm">
+                <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 md:py-1 rounded-full border border-white/12 bg-[#0E1526]/90 backdrop-blur-md shadow-sm">
                   <span
                     className="w-2 h-2 rounded-full shrink-0"
                     style={{ backgroundColor: runner.color }}
                   />
-                  <span className="font-sports font-bold text-white text-xs truncate max-w-[65px] md:max-w-[95px]">
+                  <span className="font-sports font-bold text-white type-caption-2-semibold md:type-caption-1-semibold truncate max-w-[55px] md:max-w-[90px]">
                     {runner.name}
                   </span>
-                  <span className="font-stat-num text-xs font-bold ml-0.5 text-[#CCFF00]">
+                  <span className="font-stat-num type-caption-2-semibold md:type-caption-1-semibold ml-0.5 text-[#CCFF00]">
                     {runner.wpm}w
                   </span>
                 </div>
 
                 {/* Mobile Compact Badge */}
-                <div className="flex sm:hidden items-center px-1.5 py-0.5 rounded-full border border-white/10 bg-[#0E1526]/90 text-[10px] font-bold text-slate-300 font-sports">
-                  <span className="font-stat-num text-[#CCFF00]">{runner.wpm}</span>
+                <div className="flex sm:hidden items-center px-1.5 py-0.5 rounded-full border border-white/10 bg-[#0E1526]/90 type-caption-2-semibold text-slate-300 font-sports">
+                  <span className="font-stat-num text-[#CCFF00]">{runner.wpm}w</span>
                 </div>
               </div>
 
@@ -82,14 +81,14 @@ export const RunningTrack: React.FC<RunningTrackProps> = ({
                 {/* Checkered Finish Line Strip on Every Lane */}
                 <div className="finish-line-strip" />
 
-                {/* 2D Geometric Athletic Sprinter Rig */}
+                {/* 2D Geometric Athletic Sprinter Rig with Safe Bounds */}
                 <div
                   className={`runner-anchor ${isMoving ? 'runner-active' : 'runner-idle'}`}
                   style={{
                     position: 'absolute',
                     top: '50%',
                     transform: 'translate(-50%, -55%)',
-                    left: `${trackLeftPct}%`,
+                    left: `calc(clamp(14px, 2.5vw, 24px) + ${progressClamp} * (100% - clamp(36px, 6vw, 60px)))`,
                     zIndex: 20,
                     pointerEvents: 'none',
                     willChange: 'left',

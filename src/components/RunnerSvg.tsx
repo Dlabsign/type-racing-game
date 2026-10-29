@@ -22,7 +22,7 @@ export const RunnerSvg: React.FC<RunnerSvgProps> = ({
   const bibTextColor = isVolt ? '#050811' : '#0F172A';
   const bibBgColor = '#FFFFFF';
 
-  const defaultClasses = `w-[clamp(44px,7.5vw,78px)] h-[clamp(44px,7.5vw,78px)] overflow-visible ${
+  const defaultClasses = `w-[clamp(38px,6vw,72px)] h-[clamp(38px,6vw,72px)] md:w-[clamp(48px,5vw,58px)] md:h-[clamp(48px,5vw,58px)] lg:w-[clamp(62px,5vw,74px)] lg:h-[clamp(62px,5vw,74px)] overflow-visible transition-all duration-200 ${
     hasSpeedBurst
       ? 'drop-shadow-[0_0_24px_rgba(204,255,0,0.85)]'
       : 'drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]'
